@@ -22,11 +22,9 @@ public class User {
 
     private String firstName;
     private String lastName;
-
     private String gender;
     private String adress;
     private String origin;
-
     private String accountNumber;
     private BigDecimal accountBalance;
     private String email;
@@ -37,7 +35,6 @@ public class User {
     private LocalDateTime createdAt;
     @UpdateTimestamp
     private LocalDateTime modifiedAt;
-
 
 
 }
