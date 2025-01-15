@@ -11,7 +11,6 @@ public class AccountUtils {
 
     public static String generateAccNumber()
     {
-        // year + random number (6 digits)
         Year currentYear = Year.now();
         int min = 100000;
         int max = 999999;

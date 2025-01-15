@@ -2,6 +2,7 @@ package net.guizbert.bank.service.impl;
 
 import net.guizbert.bank.dto.AccountInformationDto;
 import net.guizbert.bank.dto.BankResponseDto;
+import net.guizbert.bank.dto.EmailDto;
 import net.guizbert.bank.dto.UserDto;
 import net.guizbert.bank.entity.User;
 import net.guizbert.bank.repository.UserRepository;
@@ -16,6 +17,8 @@ public class userServiceImpl implements UserService{
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    EmailService emailService;
 
     @Override
     public BankResponseDto createAccount(UserDto userDto) {
@@ -47,6 +50,16 @@ public class userServiceImpl implements UserService{
                 .build();
         User savedUser = userRepository.save(newUser);
 
+        //send mail alert
+        EmailDto emailDetails = EmailDto.builder()
+                .recipient(savedUser.getEmail())
+                .subject("Account creation")
+                .messageBody("Account created successfully\n " +
+                        "Your account detail : " +
+                        "Account name :" + savedUser.getFirstName()+ " "+savedUser.getLastName() +
+                        "\nAccount number : " + savedUser.getAccountBalance() + " Balance : "+ savedUser.getAccountBalance())
+                .build();
+        emailService.sendEmailAlert(emailDetails);
         return BankResponseDto.builder()
                 .responseCode(AccountUtils.ACCOUNT_CREATED_SUCCESS)
                 .responseMessage(AccountUtils.ACCOUNT_CREATED_MESSAGE)
