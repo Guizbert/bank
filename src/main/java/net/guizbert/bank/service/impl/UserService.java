@@ -1,9 +1,6 @@
 package net.guizbert.bank.service.impl;
 
-import net.guizbert.bank.dto.BankResponseDto;
-import net.guizbert.bank.dto.CreditDebitRequestDto;
-import net.guizbert.bank.dto.EnquiryRequestDto;
-import net.guizbert.bank.dto.UserDto;
+import net.guizbert.bank.dto.*;
 
 public interface UserService {
 
@@ -18,6 +15,7 @@ public interface UserService {
     BankResponseDto creditAccount(CreditDebitRequestDto request);
     BankResponseDto debitAccount(CreditDebitRequestDto request);
 
+    BankResponseDto transfer(TransfertRequestDto request);
 
 
 

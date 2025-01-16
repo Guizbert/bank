@@ -1,9 +1,6 @@
 package net.guizbert.bank.controller;
 
-import net.guizbert.bank.dto.BankResponseDto;
-import net.guizbert.bank.dto.CreditDebitRequestDto;
-import net.guizbert.bank.dto.EnquiryRequestDto;
-import net.guizbert.bank.dto.UserDto;
+import net.guizbert.bank.dto.*;
 import net.guizbert.bank.service.impl.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -45,4 +42,9 @@ public class UserController {
         return userService.debitAccount(request);
     }
 
+    @PostMapping("/transfer")
+    public BankResponseDto transfer(@RequestBody TransfertRequestDto requestDto)
+    {
+        return userService.transfer(requestDto);
+    }
 }

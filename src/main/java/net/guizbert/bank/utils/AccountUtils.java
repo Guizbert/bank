@@ -33,6 +33,10 @@ public class AccountUtils {
     public static final String ACCOUNT_CREDITED_SUCCESS_MESSAGE = "User account credited successfully";
     public static final String ACCOUNT_DEBITED_SUCCESS_CODE = "203";
     public static final String ACCOUNT_DEBITED_SUCCESS_MESSAGE = "User account debited successfully";
+    // Transfer
+    public final static String TRANSFER_SUCCESS_CODE = "204";
+    public final static String TRANSFER_SUCCES_MESSAGE = "Transfer done successfully";
+
 
     public static String generateAccNumber()
     {

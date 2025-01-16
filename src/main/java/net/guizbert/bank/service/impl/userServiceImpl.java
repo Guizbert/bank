@@ -118,6 +118,72 @@ public class userServiceImpl implements UserService{
                     AccountUtils.ACCOUNT_DEBITED_SUCCESS_MESSAGE, userToDebit );
     }
 
+
+    @Override
+    public BankResponseDto transfer(TransfertRequestDto request) {
+        /*
+            - check both acc exist                              checked
+            - check if amount to transfert is possible          checked
+            - debit the account                                 checked
+            - credit the other account                          checked
+            - return bank response
+         */
+
+        if(!accountExist(request.getReceiverAccountNumber())
+            || !accountExist(request.getSenderAccountNumber()))
+        {
+            return bankResponseBuilder(AccountUtils.ACCOUNT_DOESNT_EXIST_CODE,
+                            AccountUtils.ACCOUNT_DOESNT_EXIST_MESSAGE, null);
+        }
+        User sender = userRepository.findByAccountNumber(request.getSenderAccountNumber());
+        if(!canDebitAccount(sender, request.getAmount()))
+        {
+            return bankResponseBuilder(AccountUtils.ACCOUNT_DEBITED_ERROR_CODE,
+                    AccountUtils.ACCOUNT_DEBITED_ERROR_MESSAGE, null);
+        }
+        // Sending an email to the sender & debit the account
+        String body = "You sent : " + request.getAmount() + " euros to the account : " + request.getReceiverAccountNumber();
+        sendEmail("Debit alert", sender.getEmail(),body);
+        debitAccount(sender, request.getAmount());
+
+        User receiver = userRepository.findByAccountNumber(request.getReceiverAccountNumber());
+        body = "You received : " + request.getAmount() + " euros from : " + request.getSenderAccountNumber();
+        sendEmail("Credit alert", receiver.getEmail(),body);
+        creditAccount(receiver, request.getAmount());
+
+
+        return bankResponseBuilder(AccountUtils.TRANSFER_SUCCESS_CODE, AccountUtils.TRANSFER_SUCCES_MESSAGE, null );
+    }
+
+
+    void sendEmail(String subject, String recipient, String body){
+        EmailDto emailDetails = EmailDto.builder()
+                .recipient(recipient)
+                .subject(subject)
+                .messageBody(body)
+                .build();
+        emailService.sendEmailAlert(emailDetails);
+    }
+    boolean accountExist(String accountNumber){
+        return userRepository.existsByAccountNumber(accountNumber);
+
+    }
+    boolean canDebitAccount(User user, BigDecimal amount)
+    {
+        return user.getAccountBalance().compareTo(amount) >= 0 ;
+    }
+    void creditAccount(User user, BigDecimal amount)
+    {
+        user.setAccountBalance(user.getAccountBalance().add(amount));
+        userRepository.save(user);
+    }
+    void debitAccount(User user, BigDecimal amount)
+    {
+        // Update the balance after debit
+        user.setAccountBalance(user.getAccountBalance().subtract(amount));
+        userRepository.save(user);
+    }
+
     // Method to generate the BankResponseDto consistently
     BankResponseDto bankResponseBuilder(String code, String message, User user )
     {
