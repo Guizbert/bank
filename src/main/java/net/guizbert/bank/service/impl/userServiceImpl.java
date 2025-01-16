@@ -27,11 +27,7 @@ public class userServiceImpl implements UserService{
         if(userRepository.existsByEmail(userDto.getEmail()) ||
                 userRepository.existsByPhoneNumber(userDto.getPhoneNumber()))
         {
-            return BankResponseDto.builder()
-                    .responseCode(AccountUtils.ACCOUNT_EXIST_CODE)
-                    .responseMessage(AccountUtils.ACCOUNT_EXIST_MESSAGE)
-                    .accInfo(null)
-                    .build();
+            return bankResponseBuilder(AccountUtils.ACCOUNT_EXIST_CODE, AccountUtils.ACCOUNT_EXIST_MESSAGE, null);
         }
         User newUser = User.builder()
                 .firstName(userDto.getFirstName())
@@ -47,7 +43,7 @@ public class userServiceImpl implements UserService{
                 .build();
         User savedUser = userRepository.save(newUser);
 
-        //send mail alert
+        // Send email alert
         EmailDto emailDetails = EmailDto.builder()
                 .recipient(savedUser.getEmail())
                 .subject("Account creation")
@@ -56,16 +52,8 @@ public class userServiceImpl implements UserService{
                         "Account number : " + savedUser.getAccountNumber() + " Balance : "+ savedUser.getAccountBalance())
                 .build();
         emailService.sendEmailAlert(emailDetails);
-        return BankResponseDto.builder()
-                .responseCode(AccountUtils.ACCOUNT_CREATED_SUCCESS)
-                .responseMessage(AccountUtils.ACCOUNT_CREATED_MESSAGE)
-                .accInfo(AccountInformationDto.builder()
-                        .accountName(savedUser.getLastName().toUpperCase() + " " + savedUser.getFirstName())
-                        .accountBalance(savedUser.getAccountBalance())
-                        .accountNumber(savedUser.getAccountNumber())
-
-                        .build())
-                .build();
+        // Return the response
+        return bankResponseBuilder(AccountUtils.ACCOUNT_CREATED_SUCCESS, AccountUtils.ACCOUNT_CREATED_MESSAGE, savedUser);
     }
 
     @Override
@@ -74,22 +62,10 @@ public class userServiceImpl implements UserService{
         //check if user exist based on the acc number;
         boolean exist = userRepository.existsByAccountNumber(enquiryRequestDto.getAccountNumber());
         if(!exist) {
-            return BankResponseDto.builder()
-                    .responseCode(AccountUtils.ACCOUNT_DOESNT_EXIST_CODE)
-                    .responseMessage(AccountUtils.ACCOUNT_DOESNT_EXIST_MESSAGE)
-                    .accInfo(null)
-                    .build();
+            return bankResponseBuilder(AccountUtils.ACCOUNT_DOESNT_EXIST_CODE, AccountUtils.ACCOUNT_DOESNT_EXIST_MESSAGE, null);
         }
         User user = userRepository.findByAccountNumber(enquiryRequestDto.getAccountNumber());
-        return BankResponseDto.builder()
-                .responseCode(AccountUtils.ACCOUNT_FOUND_CODE)
-                .responseMessage(AccountUtils.ACCOUNT_FOUND_MESSAGE)
-                .accInfo(AccountInformationDto.builder()
-                        .accountName(user.getFirstName() + " "+ user.getLastName().toUpperCase())
-                        .accountNumber(user.getAccountNumber())
-                        .accountBalance(user.getAccountBalance())
-                        .build())
-                .build();
+        return bankResponseBuilder(AccountUtils.ACCOUNT_FOUND_CODE, AccountUtils.ACCOUNT_FOUND_MESSAGE, user);
     }
 
     @Override
@@ -109,28 +85,58 @@ public class userServiceImpl implements UserService{
         // check account exist :
         boolean exist = userRepository.existsByAccountNumber(request.getAccountNumber());
         if(!exist) {
+            return bankResponseBuilder(AccountUtils.ACCOUNT_DOESNT_EXIST_CODE, AccountUtils.ACCOUNT_DOESNT_EXIST_MESSAGE, null);
+        }
+        // Retrieve user and update balance
+        User userToCredit = userRepository.findByAccountNumber(request.getAccountNumber());
+        userToCredit.setAccountBalance(userToCredit.getAccountBalance().add(request.getAmount()));
+        userRepository.save(userToCredit);
+
+        // Return updated balance
+        return bankResponseBuilder(AccountUtils.ACCOUNT_CREDITED_SUCCESS_CODE, AccountUtils.ACCOUNT_CREDITED_SUCCESS_MESSAGE, userToCredit);
+    }
+
+    @Override
+    public BankResponseDto debitAccount(CreditDebitRequestDto request) {
+        // check if account exist :
+        boolean exist = userRepository.existsByAccountNumber(request.getAccountNumber());
+        if(!exist) {
+            return bankResponseBuilder(AccountUtils.ACCOUNT_DOESNT_EXIST_CODE,
+                    AccountUtils.ACCOUNT_DOESNT_EXIST_MESSAGE, null);
+        }
+        User userToDebit = userRepository.findByAccountNumber(request.getAccountNumber());
+        // Check if the account has sufficient balance
+        if(userToDebit.getAccountBalance().compareTo(request.getAmount()) < 0)
+        {
+            return bankResponseBuilder(AccountUtils.ACCOUNT_DEBITED_ERROR_CODE,AccountUtils.ACCOUNT_DEBITED_ERROR_MESSAGE,null);
+        }
+        // Update the balance after debit
+        userToDebit.setAccountBalance(userToDebit.getAccountBalance().subtract(request.getAmount()));
+        userRepository.save(userToDebit);
+        // Return updated balance
+        return bankResponseBuilder(AccountUtils.ACCOUNT_DEBITED_SUCCESS_CODE,
+                    AccountUtils.ACCOUNT_DEBITED_SUCCESS_MESSAGE, userToDebit );
+    }
+
+    // Method to generate the BankResponseDto consistently
+    BankResponseDto bankResponseBuilder(String code, String message, User user )
+    {
+        if(user == null)
+        {
             return BankResponseDto.builder()
-                    .responseCode(AccountUtils.ACCOUNT_DOESNT_EXIST_CODE)
-                    .responseMessage(AccountUtils.ACCOUNT_DOESNT_EXIST_MESSAGE)
+                    .responseCode(code)
+                    .responseMessage(message)
                     .accInfo(null)
                     .build();
         }
-        User userToCredit = userRepository.findByAccountNumber(request.getAccountNumber());
-        //update the user balance :
-        userToCredit.setAccountBalance(userToCredit.getAccountBalance().add(request.getAmount()));
-        //saving the update
-        userRepository.save(userToCredit);
-
         return BankResponseDto.builder()
-                .responseCode(AccountUtils.ACCOUNT_CREDITED_SUCCESS_CODE)
-                .responseMessage(AccountUtils.ACCOUNT_CREDITED_SUCCESS_MESSAGE)
+                .responseCode(code)
+                .responseMessage(message)
                 .accInfo(AccountInformationDto.builder()
-                        .accountName(userToCredit.getFirstName() + " "+ userToCredit.getLastName().toUpperCase())
-                        .accountNumber(userToCredit.getAccountNumber())
-                        .accountBalance(userToCredit.getAccountBalance())
+                        .accountName(user.getFirstName() + " "+ user.getLastName().toUpperCase())
+                        .accountNumber(user.getAccountNumber())
+                        .accountBalance(user.getAccountBalance())
                         .build())
                 .build();
     }
-
-
 }

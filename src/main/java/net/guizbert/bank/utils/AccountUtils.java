@@ -13,6 +13,10 @@ public class AccountUtils {
     public static final String ACCOUNT_DOESNT_EXIST_CODE = "404";
     public static final String ACCOUNT_DOESNT_EXIST_MESSAGE = "The account number provided doesn't show in the DB";
 
+    //acc doesnt exist
+    public static final String ACCOUNT_DEBITED_ERROR_CODE = "405";
+    public static final String ACCOUNT_DEBITED_ERROR_MESSAGE = "The amount provided is superior than the current amount in your account.";
+
     //account exist
     public static final String ACCOUNT_EXIST_CODE = "101";
     public static final String ACCOUNT_EXIST_MESSAGE = "This user already exist and have an account.";
@@ -24,9 +28,11 @@ public class AccountUtils {
     //account found
     public static final String ACCOUNT_FOUND_CODE = "202";
     public static final String ACCOUNT_FOUND_MESSAGE = "Account found.";
-
+    //account credited / debited
     public static final String ACCOUNT_CREDITED_SUCCESS_CODE = "203";
     public static final String ACCOUNT_CREDITED_SUCCESS_MESSAGE = "User account credited successfully";
+    public static final String ACCOUNT_DEBITED_SUCCESS_CODE = "203";
+    public static final String ACCOUNT_DEBITED_SUCCESS_MESSAGE = "User account debited successfully";
 
     public static String generateAccNumber()
     {

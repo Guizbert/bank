@@ -16,4 +16,10 @@ public interface UserService {
     String nameEnquiry(EnquiryRequestDto enquiryRequestDto);
 
     BankResponseDto creditAccount(CreditDebitRequestDto request);
+    BankResponseDto debitAccount(CreditDebitRequestDto request);
+
+
+
+
+
 }
