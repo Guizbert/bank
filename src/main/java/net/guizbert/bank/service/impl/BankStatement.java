@@ -6,17 +6,20 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.guizbert.bank.dto.EmailDto;
 import net.guizbert.bank.entity.Transaction;
 import net.guizbert.bank.entity.User;
 import net.guizbert.bank.repository.TransactionRepository;
 import net.guizbert.bank.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.EnumMap;
 import java.util.List;
 
 @Slf4j
@@ -29,6 +32,7 @@ public class BankStatement {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
+    private EmailService emailService;
 
     public List<Transaction> generateStatement(String accountNumber, String startDate, String endDate) throws DocumentException, FileNotFoundException {
         LocalDate start = LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE);
@@ -71,6 +75,21 @@ public class BankStatement {
         document.add(transactionTable);
 
         document.close();
+        EmailDto emailDto = EmailDto.builder()
+                .recipient(user.getEmail())
+                .subject("Statement of account ("+startDate+")")
+                .messageBody("Dear " + user.getFirstName() + ",\n\nFind attached the statement of your account for the period starting from "
+                        + startDate + ". Please review the transactions and contact us if you have any questions.\n\nBest regards,\nYour Bank")
+                .attachment(PDF_FILE_PATH)
+                .build();
+
+        if (new File(PDF_FILE_PATH).exists()) {
+            emailDto.setAttachment(PDF_FILE_PATH);
+            emailService.sendEmailWithAttachments(emailDto);
+        } else {
+            log.error("The statement file does not exist at path: " + PDF_FILE_PATH);
+        }
+
         log.info("PDF document generated successfully at {}", PDF_FILE_PATH);
     }
 
