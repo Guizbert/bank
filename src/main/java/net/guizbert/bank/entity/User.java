@@ -35,7 +35,6 @@ public class User implements UserDetails {
     private String email;
     private String phoneNumber;
     private String status;
-    // Added password for Security :
     private String password;
     private Role role;
 

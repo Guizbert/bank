@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,22 +17,21 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
-@Component // Marks this class as a Spring-managed bean (component) that will be automatically registered in the context
+@Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    @Autowired
+    private JwtTokenProvider jwtTokenprovider;
+    @Autowired
+    private UserDetailsService userDetailsService;
 
-    private JwtTokenProvider jwtTokenprovider; // JWT token provider for generating/validating tokens
-    private UserDetailsService userDetailsService; // UserDetailsService to load user data
-
-    // This method is called for every incoming HTTP request, ensuring the JWT token is validated for each request
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         // Extract the token from the request
         String token = getToken(request);
 
         // If the token is valid, authenticate the user
-        if(StringUtils.hasText(token) && jwtTokenprovider.vaidateToken(token)) {
+        if(StringUtils.hasText(token) && jwtTokenprovider.validateToken(token)) {
             // Extract the username from the token
             String userName = jwtTokenprovider.getUserName(token);
 
@@ -50,9 +50,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // Helper method to extract the token from the HTTP request's "Auth" header
+    // Helper method to extract the token from the HTTP request's "Authorization" header
     private String getToken(HttpServletRequest request) {
-        String tokenHeader = request.getHeader("Auth");
+        String tokenHeader = request.getHeader("Authorization"); // Change "Auth" to "Authorization"
 
         // If the header contains "Bearer " followed by the token, extract and return the token
         if(StringUtils.hasText(tokenHeader) && tokenHeader.startsWith("Bearer ")) {

@@ -73,7 +73,7 @@ public class JwtTokenProvider {
         Claims claims = Jwts.parser()
                 .setSigningKey((key()))
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(name)
                 .getPayload();
 
         // Return the username from the claims
@@ -87,7 +87,7 @@ public class JwtTokenProvider {
      * @param token The JWT token to validate.
      * @return True if the token is valid, otherwise an exception is thrown.
      */
-    public boolean vaidateToken(String token)
+    public boolean validateToken(String token)
     {
         try {
             // Validate the token by parsing it with the signing key
