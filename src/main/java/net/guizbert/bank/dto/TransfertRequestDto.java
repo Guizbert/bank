@@ -16,5 +16,4 @@ public class TransfertRequestDto {
     private String senderAccountNumber;
     private String receiverAccountNumber;
     private BigDecimal amount;
-
 }

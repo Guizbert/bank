@@ -1,6 +1,8 @@
 package net.guizbert.bank.utils;
 
+import java.security.SecureRandom;
 import java.time.Year;
+import java.util.List;
 
 public class AccountUtils {
     /*
@@ -41,16 +43,60 @@ public class AccountUtils {
     public final static String LOGIN_MESSAGE = "You logged in successfully";
 
 
+    private static final String[][] COUNTRY_IBAN_LENGTHS = {
+            {"FR", "27"}, // France
+            {"BE", "16"}, // Belgium
+            {"PL", "28"}, // Poland
+            {"ES", "24"}, // Spain
+            {"IE", "22"}, // Ireland
+            {"SE", "24"}  // Sweden
+    };
 
-    public static String generateAccNumber()
-    {
-        Year currentYear = Year.now();
-        int min = 100000;
-        int max = 999999;
+    private static final SecureRandom random = new SecureRandom();
 
-        int randomNumber = (int) Math.floor(Math.random() * (max - min +1) +(currentYear.getValue() *100));
+    public static String generateAccNumber() {
+        StringBuilder accountNumber = new StringBuilder();
 
-        //We can use a String builder  but i'll just return it this way for now
-        return String.valueOf(currentYear) + String.valueOf(randomNumber);
+        // Randomly choose a country from the possible prefixes
+        String[] possiblePrefix = {"FR", "BE", "PL", "ES", "IE", "SE"};
+        String countryCode = possiblePrefix[random.nextInt(possiblePrefix.length)];
+
+        // Find the account number length for the selected country
+        String accountLengthStr = getAccountLengthForCountry(countryCode);
+        int accountLength = Integer.parseInt(accountLengthStr);
+
+        // Generate the IBAN-like account number
+        accountNumber.append(countryCode);  // Add country code
+        accountNumber.append(generateRandomCheckDigits());
+
+        // Generate the remaining account number (random digits)
+        int accountNumberLength = accountLength - 4; // Subtract country code and check digits
+        accountNumber.append(generateRandomAccountNumber(accountNumberLength));
+
+        return accountNumber.toString();
+    }
+
+    private static String getAccountLengthForCountry(String countryCode) {
+        for (String[] countryInfo : COUNTRY_IBAN_LENGTHS) {
+            if (countryInfo[0].equals(countryCode)) {
+                return countryInfo[1];
+            }
+        }
+        throw new IllegalArgumentException("Unsupported country code: " + countryCode);
+    }
+
+    private static String generateRandomCheckDigits() {
+        // In real scenarios, the check digits are calculated based on the IBAN format.
+        // For this project, generate two random digits as placeholders.
+        return String.format("%02d", random.nextInt(100));  // Generates two random digits (00-99)
+    }
+
+    private static String generateRandomAccountNumber(int length) {
+        // Generate a random account number with the specified length
+        StringBuilder accountNumber = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            accountNumber.append(random.nextInt(10));  // Generate a random digit (0-9)
+        }
+        return accountNumber.toString();
     }
 }

@@ -11,8 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class EnquiryRequestDto {
-
     private String accountNumber;
-
-
 }
