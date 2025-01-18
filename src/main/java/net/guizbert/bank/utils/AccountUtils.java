@@ -36,6 +36,10 @@ public class AccountUtils {
     // Transfer
     public final static String TRANSFER_SUCCESS_CODE = "204";
     public final static String TRANSFER_SUCCES_MESSAGE = "Transfer done successfully";
+    // Login
+    public final static String LOGIN_CODE = "205";
+    public final static String LOGIN_MESSAGE = "You logged in successfully";
+
 
 
     public static String generateAccNumber()

@@ -33,6 +33,13 @@ public class UserController {
         return userService.createAccount(userDto);
     }
 
+    @PostMapping("/login")
+    public BankResponseDto login(@RequestBody LoginDto loginDto)
+    {
+        return userService.login(loginDto);
+
+    }
+
     @GetMapping("/getUsers")
     public SequencedCollection<User> UserDto(){
         return userService.users();

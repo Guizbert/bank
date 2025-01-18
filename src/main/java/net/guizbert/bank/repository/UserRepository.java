@@ -4,6 +4,7 @@ import net.guizbert.bank.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 //https://docs.spring.io/spring-data/jpa/docs/current/api/org/springframework/data/jpa/repository/JpaRepository.html
 
@@ -28,5 +29,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findByAccountNumber(String accountNumber);
 
     List<User> findAll();
+
+    Optional<User> findByEmail(String email);
+
+
 }
 

@@ -1,6 +1,7 @@
 package net.guizbert.bank.dto;
 
 import lombok.*;
+import net.guizbert.bank.entity.Role;
 
 import java.math.BigDecimal;
 
@@ -15,9 +16,10 @@ public class UserDto {
     private String gender;
     private String adress;
     private String origin;
-
+    private String password;
     private String email;
     private String phoneNumber;
+    private Role role;
     private BigDecimal accountBalance;
 
 }

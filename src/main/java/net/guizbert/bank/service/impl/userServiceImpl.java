@@ -1,11 +1,18 @@
 package net.guizbert.bank.service.impl;
 
+import lombok.AllArgsConstructor;
 import net.guizbert.bank.dto.*;
+import net.guizbert.bank.entity.Role;
 import net.guizbert.bank.entity.Transaction;
 import net.guizbert.bank.entity.User;
 import net.guizbert.bank.repository.UserRepository;
+import net.guizbert.bank.security.JwtTokenProvider;
 import net.guizbert.bank.utils.AccountUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -20,6 +27,12 @@ public class userServiceImpl implements UserService{
     EmailService emailService;
     @Autowired
     TransactionService transactionService;
+    @Autowired
+    PasswordEncoder passwordEncoder;
+    @Autowired
+    AuthenticationManager authManager;
+    @Autowired
+    JwtTokenProvider jwtTokenProvider;
 
     @Override
     public BankResponseDto createAccount(UserDto userDto) {
@@ -39,7 +52,9 @@ public class userServiceImpl implements UserService{
                 .gender(userDto.getGender())
                 .adress(userDto.getAdress())
                 .origin(userDto.getOrigin())
+                .password(passwordEncoder.encode(userDto.getPassword()))
                 .email(userDto.getEmail())
+                .role(Role.USER)
                 .accountNumber(AccountUtils.generateAccNumber())
                 .accountBalance(BigDecimal.ZERO)
                 .phoneNumber(userDto.getPhoneNumber())
@@ -59,6 +74,22 @@ public class userServiceImpl implements UserService{
         // Return the response
         return bankResponseBuilder(AccountUtils.ACCOUNT_CREATED_SUCCESS, AccountUtils.ACCOUNT_CREATED_MESSAGE, savedUser);
     }
+
+    public BankResponseDto login(LoginDto loginDto)
+    {
+        Authentication auth =authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword())
+        );
+
+        sendEmail("Login alert", loginDto.getEmail(), "You logged into your account. If it's not you, please contact your bank.");
+        return bankResponseBuilder(
+                AccountUtils.LOGIN_CODE,
+                jwtTokenProvider.generateToken(auth),
+                null
+        );
+
+    }
+
 
     @Override
     public List<User> users() {
